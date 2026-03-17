@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RailOps"
+rootProject.name = "YatraTrackr"
 include(":app")

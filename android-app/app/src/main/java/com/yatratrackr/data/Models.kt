@@ -1,4 +1,4 @@
-package com.railops.data
+package com.yatratrackr.data
 
 data class Traveller(
     val name: String,

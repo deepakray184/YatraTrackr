@@ -1,12 +1,12 @@
-package com.railops.network
+package com.yatratrackr.network
 
-import com.railops.data.FetchTripRequest
-import com.railops.data.SubmitReviewRequest
-import com.railops.data.TripSnapshot
+import com.yatratrackr.data.FetchTripRequest
+import com.yatratrackr.data.SubmitReviewRequest
+import com.yatratrackr.data.TripSnapshot
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-interface RailOpsApi {
+interface YatraTrackrApi {
     @POST("api/trips/fetch-by-pnr")
     suspend fun fetchTrip(@Body request: FetchTripRequest): TripSnapshot
 

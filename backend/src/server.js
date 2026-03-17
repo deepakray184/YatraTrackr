@@ -166,5 +166,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(`RailOps backend listening on port ${port}`);
+  console.log(`YatraTrackr backend listening on port ${port}`);
 });

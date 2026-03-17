@@ -1,4 +1,4 @@
-package com.railops
+package com.yatratrackr
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,10 +33,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
-import com.railops.data.FetchTripRequest
-import com.railops.data.SubmitReviewRequest
-import com.railops.data.TripSnapshot
-import com.railops.network.RailOpsApi
+import com.yatratrackr.data.FetchTripRequest
+import com.yatratrackr.data.SubmitReviewRequest
+import com.yatratrackr.data.TripSnapshot
+import com.yatratrackr.network.YatraTrackrApi
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -46,20 +46,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                RailOpsScreen()
+                YatraTrackrScreen()
             }
         }
     }
 }
 
-private val api: RailOpsApi = Retrofit.Builder()
+private val api: YatraTrackrApi = Retrofit.Builder()
     .baseUrl("http://10.0.2.2:4000/")
     .addConverterFactory(GsonConverterFactory.create())
     .build()
-    .create(RailOpsApi::class.java)
+    .create(YatraTrackrApi::class.java)
 
 @Composable
-fun RailOpsScreen() {
+fun YatraTrackrScreen() {
     val scope = rememberCoroutineScope()
     var pnr by remember { mutableStateOf("") }
     var staffId by remember { mutableStateOf("") }
@@ -75,7 +75,7 @@ fun RailOpsScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("RailOps - PNR Fetch + Cleanliness Review")
+        Text("YatraTrackr - PNR Fetch + Cleanliness Review")
         OutlinedTextField(value = pnr, onValueChange = { pnr = it }, label = { Text("PNR") })
         OutlinedTextField(value = staffId, onValueChange = { staffId = it }, label = { Text("Staff ID") })
 
@@ -144,7 +144,7 @@ fun RailOpsScreen() {
 
         Text(message, color = Color.DarkGray)
         Text(
-            "Disclaimer: RailOps is an independent tool and is not affiliated with, authorized by, or endorsed by IRCTC/Indian Railways."
+            "Disclaimer: YatraTrackr is an independent tool and is not affiliated with, authorized by, or endorsed by IRCTC/Indian Railways."
         )
     }
 }

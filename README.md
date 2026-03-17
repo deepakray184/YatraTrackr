@@ -1,11 +1,11 @@
-# RailOps: Specialized Operational Tool for Railway Personnel
+# YatraTrackr: Specialized Operational Tool for Railway Personnel
 
-RailOps is a data-driven operations platform for railway staff and contractors. This repository includes:
+YatraTrackr is a data-driven operations platform for railway staff and contractors. This repository includes:
 - **Android client** to fetch traveller information via PNR and submit cleanliness reviews.
 - **Node.js backend** that stores PNR snapshots and signed review records.
 
 ## Important Disclaimer & Data Source
-- **Non-Official Status:** RailOps is an independent, privately developed application.
+- **Non-Official Status:** YatraTrackr is an independent, privately developed application.
 - It is **not affiliated with, authorized by, or endorsed by IRCTC or Indian Railways**.
 - Any live PNR integration must use officially permitted/licensed data providers and must comply with IRCTC and legal requirements.
 
