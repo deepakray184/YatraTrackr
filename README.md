@@ -1,9 +1,6 @@
 # YatraTrackr: Specialized Operational Tool for Railway Personnel
 
 YatraTrackr is a data-driven operations platform for railway staff and contractors. This repository includes:
-# YatraTrackr: Specialized Operational Tool for Railway Personnel
-
-YatraTrackr is a data-driven operations platform for railway staff and contractors. This repository includes:
 - **Android client** to fetch traveller information via PNR and submit cleanliness reviews.
 - **Node.js backend** that stores PNR snapshots and signed review records.
 
@@ -49,3 +46,59 @@ If provider variables are not set, the API falls back to mock PNR data for devel
 Backend writes JSON files into `backend/data`:
 - `travellers.json`
 - `reviews.json`
+
+## Azure deployment steps (separate)
+
+### 1) Prerequisites
+- Install Azure CLI and sign in:
+```bash
+az login
+```
+- Set the subscription:
+```bash
+az account set --subscription "<SUBSCRIPTION_ID>"
+```
+
+### 2) Create Azure resources
+```bash
+az group create -n yatratrackr-rg -l centralindia
+az appservice plan create -g yatratrackr-rg -n yatratrackr-plan --is-linux --sku B1
+az webapp create -g yatratrackr-rg -p yatratrackr-plan -n yatratrackr-api --runtime "NODE|22-lts"
+```
+
+### 3) Configure backend app settings
+Set runtime settings (dummy mode). If `IRCTC_API_BASE_URL` and `IRCTC_API_KEY` are not configured, backend automatically uses mock PNR data.
+```bash
+az webapp config appsettings set -g yatratrackr-rg -n yatratrackr-api --settings \
+WEBSITE_NODE_DEFAULT_VERSION=22-lts \
+SCM_DO_BUILD_DURING_DEPLOYMENT=true
+```
+
+### 4) Deploy backend code to Azure App Service
+From repository root:
+```bash
+cd backend
+zip -r ../backend.zip .
+cd ..
+az webapp deploy -g yatratrackr-rg -n yatratrackr-api --src-path backend.zip --type zip
+```
+
+### 5) Validate deployment
+```bash
+curl https://yatratrackr-api.azurewebsites.net/health
+curl -X POST https://yatratrackr-api.azurewebsites.net/api/trips/fetch-by-pnr \
+  -H "Content-Type: application/json" \
+  -d '{"pnr":"1234567890","requestedBy":"azure-test"}'
+```
+
+### 6) Connect Android app to Azure backend
+Update the base URL in Android app from emulator-local URL to Azure URL:
+- Current local URL: `http://10.0.2.2:4000/`
+- Azure URL example: `https://yatratrackr-api.azurewebsites.net/`
+
+Then build and distribute the APK/AAB from Android Studio.
+
+### 7) Recommended production hardening
+- Replace file-based JSON storage with Azure SQL or Cosmos DB.
+- Use Azure Key Vault for provider API secrets.
+- Restrict CORS and add authentication/authorization for railway staff workflows.
