@@ -1,9 +1,9 @@
 # YatraTrackr: Specialized Operational Tool for Railway Personnel
 
 YatraTrackr is a data-driven operations platform for railway staff and contractors. This repository includes:
-# RailOps: Specialized Operational Tool for Railway Personnel
+# YatraTrackr: Specialized Operational Tool for Railway Personnel
 
-RailOps is a data-driven operations platform for railway staff and contractors. This repository includes:
+YatraTrackr is a data-driven operations platform for railway staff and contractors. This repository includes:
 - **Android client** to fetch traveller information via PNR and submit cleanliness reviews.
 - **Node.js backend** that stores PNR snapshots and signed review records.
 
