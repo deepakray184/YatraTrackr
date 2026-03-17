@@ -1,13 +1,43 @@
-import express from 'express';
 import crypto from 'node:crypto';
-import cors from 'cors';
+import http from 'node:http';
+import { URL } from 'node:url';
 import { saveReview, saveTravellerSnapshot } from './storage.js';
 
-const app = express();
-app.use(cors());
-app.use(express.json({ limit: '4mb' }));
+const port = Number(process.env.PORT || 4000);
 
-const port = process.env.PORT || 4000;
+function jsonResponse(res, statusCode, payload) {
+  res.writeHead(statusCode, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  });
+  res.end(JSON.stringify(payload));
+}
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+    req.on('data', (chunk) => {
+      raw += chunk;
+      if (raw.length > 4 * 1024 * 1024) {
+        reject(new Error('Payload too large'));
+      }
+    });
+    req.on('end', () => {
+      if (!raw) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(raw));
+      } catch {
+        reject(new Error('Invalid JSON payload'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
 
 async function fetchTravellerFromSource(pnr) {
   const baseUrl = process.env.IRCTC_API_BASE_URL;
@@ -50,55 +80,91 @@ async function fetchTravellerFromSource(pnr) {
   };
 }
 
-app.get('/health', (_, res) => {
-  res.json({ status: 'ok' });
-});
+function isValidPnr(pnr) {
+  return typeof pnr === 'string' && /^\d{10}$/.test(pnr);
+}
 
-app.post('/api/trips/fetch-by-pnr', async (req, res) => {
-  const { pnr, requestedBy } = req.body;
+const server = http.createServer(async (req, res) => {
+  const parsedUrl = new URL(req.url || '/', `http://${req.headers.host}`);
+  const path = parsedUrl.pathname;
 
-  if (!pnr || String(pnr).length !== 10) {
-    return res.status(400).json({ error: 'PNR must be exactly 10 digits.' });
-  }
-
-  try {
-    const data = await fetchTravellerFromSource(String(pnr));
-    const snapshot = {
-      ...data,
-      requestedBy: requestedBy || 'unknown',
-      fetchedAt: new Date().toISOString()
-    };
-
-    saveTravellerSnapshot(snapshot);
-    return res.json(snapshot);
-  } catch (error) {
-    return res.status(502).json({ error: error.message });
-  }
-});
-
-app.post('/api/reviews', (req, res) => {
-  const { pnr, staffId, cleanlinessRating, comments, signaturePayload } = req.body;
-
-  if (!pnr || !staffId || !cleanlinessRating || !signaturePayload) {
-    return res.status(400).json({
-      error: 'pnr, staffId, cleanlinessRating, and signaturePayload are required.'
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     });
+    res.end();
+    return;
   }
 
-  const review = {
-    id: crypto.randomUUID(),
-    pnr,
-    staffId,
-    cleanlinessRating,
-    comments: comments || '',
-    signaturePayload,
-    createdAt: new Date().toISOString()
-  };
+  if (req.method === 'GET' && path === '/health') {
+    jsonResponse(res, 200, { status: 'ok' });
+    return;
+  }
 
-  saveReview(review);
-  return res.status(201).json(review);
+  if (req.method === 'POST' && path === '/api/trips/fetch-by-pnr') {
+    try {
+      const { pnr, requestedBy } = await readJsonBody(req);
+      if (!isValidPnr(String(pnr ?? ''))) {
+        jsonResponse(res, 400, { error: 'PNR must be exactly 10 digits.' });
+        return;
+      }
+
+      const data = await fetchTravellerFromSource(String(pnr));
+      const snapshot = {
+        ...data,
+        requestedBy: requestedBy || 'unknown',
+        fetchedAt: new Date().toISOString()
+      };
+
+      saveTravellerSnapshot(snapshot);
+      jsonResponse(res, 200, snapshot);
+      return;
+    } catch (error) {
+      jsonResponse(res, 502, { error: error.message });
+      return;
+    }
+  }
+
+  if (req.method === 'POST' && path === '/api/reviews') {
+    try {
+      const { pnr, staffId, cleanlinessRating, comments, signaturePayload } = await readJsonBody(req);
+      if (!isValidPnr(String(pnr ?? '')) || !staffId || !signaturePayload) {
+        jsonResponse(res, 400, {
+          error: 'pnr (10 digits), staffId, cleanlinessRating, and signaturePayload are required.'
+        });
+        return;
+      }
+
+      const ratingNumber = Number(cleanlinessRating);
+      if (!Number.isInteger(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
+        jsonResponse(res, 400, { error: 'cleanlinessRating must be an integer between 1 and 5.' });
+        return;
+      }
+
+      const review = {
+        id: crypto.randomUUID(),
+        pnr: String(pnr),
+        staffId: String(staffId),
+        cleanlinessRating: ratingNumber,
+        comments: comments ? String(comments) : '',
+        signaturePayload: String(signaturePayload),
+        createdAt: new Date().toISOString()
+      };
+
+      saveReview(review);
+      jsonResponse(res, 201, review);
+      return;
+    } catch (error) {
+      jsonResponse(res, 400, { error: error.message });
+      return;
+    }
+  }
+
+  jsonResponse(res, 404, { error: 'Not Found' });
 });
 
-app.listen(port, () => {
-  console.log(`RailOps backend listening on port ${port}`);
+server.listen(port, () => {
+  console.log(`YatraTrackr backend listening on port ${port}`);
 });

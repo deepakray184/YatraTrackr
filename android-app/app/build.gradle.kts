@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.railops"
+    namespace = "com.yatratrackr"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.railops"
+        applicationId = "com.yatratrackr"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
