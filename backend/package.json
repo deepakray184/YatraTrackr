@@ -1,0 +1,12 @@
+{
+  "name": "yatratrackr-backend",
+  "version": "1.1.0",
+  "description": "Backend API for YatraTrackr operations and traveller review capture",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/server.js && node --check src/storage.js"
+  }
+}
