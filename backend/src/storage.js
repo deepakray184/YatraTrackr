@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const dataDir = path.resolve(process.cwd(), 'backend/data');
+const currentFile = fileURLToPath(import.meta.url);
+const currentDir = path.dirname(currentFile);
+const dataDir = path.resolve(currentDir, '../data');
 const travellersFile = path.join(dataDir, 'travellers.json');
 const reviewsFile = path.join(dataDir, 'reviews.json');
 
