@@ -35,6 +35,63 @@ If provider variables are not set, the API falls back to mock PNR data for devel
 3. Run app on emulator/device.
 4. Ensure backend runs on host at port `4000` (emulator URL in app uses `http://10.0.2.2:4000/`).
 
+## Running on Windows
+
+### 1) Install prerequisites
+- Install **Node.js LTS** on Windows.
+- Install **Android Studio Hedgehog+** with:
+  - Android SDK Platform 34
+  - Android SDK Build-Tools
+  - Android Emulator
+  - A device image for an Android Virtual Device (AVD)
+
+### 2) Start the backend
+Open **PowerShell** in the repository root and run:
+
+```powershell
+cd backend
+npm install
+npm start
+```
+
+Expected result:
+- Backend starts on port `4000`
+- `http://localhost:4000/health` should return a healthy response
+
+Notes:
+- If `IRCTC_API_BASE_URL` and `IRCTC_API_KEY` are not set, the backend uses mock PNR data automatically.
+- Test with any 10-digit PNR such as `1234567890`.
+
+### 3) Open the Android app
+1. Open **Android Studio**.
+2. Select **Open** and choose the `android-app` folder from this repository.
+3. Allow Gradle Sync to complete.
+
+### 4) Run on an Android emulator
+1. Open **Device Manager** in Android Studio.
+2. Create or start an Android emulator.
+3. Click **Run**.
+
+The app is already configured to call `http://10.0.2.2:4000/`, which maps the Android emulator back to your Windows host machine where the backend is running.
+
+### 5) Test the flow
+- Enter a 10-digit PNR such as `1234567890`
+- Enter any staff ID, for example `staff123`
+- Tap **Fetch PNR**
+- Provide a cleanliness rating, comments, and signature
+- Tap **Submit Review**
+
+### 6) If using a real Android phone
+`10.0.2.2` only works for the Android emulator. For a physical device:
+- Change the app base URL from `http://10.0.2.2:4000/` to your PC's local network IP, such as `http://192.168.1.50:4000/`
+- Ensure the phone and PC are on the same Wi-Fi network
+- Allow port `4000` through Windows Firewall if needed
+
+### 7) Stored test data
+The backend writes local JSON files to:
+- `backend/data/travellers.json`
+- `backend/data/reviews.json`
+
 ## API endpoints
 - `POST /api/trips/fetch-by-pnr`
   - body: `{ "pnr": "1234567890", "requestedBy": "staff123" }`
