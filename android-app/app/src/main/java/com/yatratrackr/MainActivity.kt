@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
 }
 
 private val api: YatraTrackrApi = Retrofit.Builder()
-    .baseUrl("http://10.0.2.2:4000/")
+    .baseUrl(BuildConfig.API_BASE_URL)
     .addConverterFactory(GsonConverterFactory.create())
     .build()
     .create(YatraTrackrApi::class.java)

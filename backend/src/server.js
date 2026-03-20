@@ -98,6 +98,19 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && path === '/') {
+    jsonResponse(res, 200, {
+      name: 'YatraTrackr backend',
+      status: 'ok',
+      endpoints: {
+        health: '/health',
+        fetchTripByPnr: '/api/trips/fetch-by-pnr',
+        reviews: '/api/reviews'
+      }
+    });
+    return;
+  }
+
   if (req.method === 'GET' && path === '/health') {
     jsonResponse(res, 200, { status: 'ok' });
     return;
